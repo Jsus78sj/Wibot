@@ -1,0 +1,9 @@
+services:
+  wibot:
+    build: .
+    container_name: wibot
+    restart: always
+    env_file:
+      - config.env
+    volumes:
+      - ./sessions:/app/sessions

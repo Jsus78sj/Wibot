@@ -1,0 +1,80 @@
+name: Auto-Translate to Arabic
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:  # يسمح بتشغيله يدويًا من واجهة GitHub
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install translation library
+        run: pip install deep-translator
+
+      - name: Translate all English strings in wbb/
+        run: |
+          python -c "
+          import os, ast, re
+          from deep_translator import GoogleTranslator
+          translator = GoogleTranslator(source='en', target='ar')
+          def translate_text(txt):
+              if not txt or not txt.strip():
+                  return txt
+              try:
+                  parts = re.split(r'(\\{.*?\\})', txt)
+                  res = ''
+                  for p in parts:
+                      if re.match(r'\\{.*?\\}', p):
+                          res += p
+                      elif p.strip():
+                          res += translator.translate(p)
+                      else:
+                          res += p
+                  return res
+              except:
+                  return txt
+          count = 0
+          for dirpath, _, filenames in os.walk('wbb'):
+              for f in filenames:
+                  if f.endswith('.py'):
+                      fp = os.path.join(dirpath, f)
+                      with open(fp, 'r', encoding='utf-8') as file:
+                          original = file.read()
+                      try:
+                          tree = ast.parse(original)
+                      except:
+                          continue
+                      modified = original
+                      for node in ast.walk(tree):
+                          if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                              s = node.value.strip()
+                              if len(s) > 2 and 'http' not in s and not s.startswith('__'):
+                                  trans = translate_text(s)
+                                  if trans != s and s in modified:
+                                      modified = modified.replace(s, trans)
+                                      count += 1
+                      with open(fp, 'w', encoding='utf-8') as file:
+                          file.write(modified)
+          print(f'Total strings translated: {count}')
+          "
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --quiet --exit-code || git commit -m "Auto-translate strings to Arabic"
+          git push

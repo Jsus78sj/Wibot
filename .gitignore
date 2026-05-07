@@ -1,0 +1,34 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtualenvs
+venv/
+.venv/
+env/
+
+# Bot data
+sessions/
+*.session
+*.session-journal
+bot.log
+wbb.log
+
+# Local config (do NOT commit secrets!)
+config.env
+config.py
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.zip
+*.tar.gz
