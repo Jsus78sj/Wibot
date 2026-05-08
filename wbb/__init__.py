@@ -13,7 +13,7 @@ from aiohttp import ClientSession
 from motor.motor_asyncio import AsyncIOMotorClient as MongoClient
 from pyrogram import Client, filters
 from pyrogram.types import Message
-import pyromod  # noqa: F401  (patches Client to support listen())
+import pyromod  # noqa: F401
 from Python_ARQ import ARQ
 from telegraph import Telegraph
 
@@ -61,7 +61,6 @@ log = Log(True, "bot.log")
 log.info("Initializing MongoDB client")
 mongo_client = MongoClient(MONGO_URL)
 db = mongo_client.wbb
-
 
 # Use one persistent event loop for the whole bot lifetime
 try:
@@ -135,10 +134,7 @@ aiohttpsession = loop.run_until_complete(_make_session())
 arq = ARQ(ARQ_API_URL, ARQ_API_KEY, aiohttpsession)
 
 log.info("Starting bot client")
-app.start()
-if app2 is not app:
-    log.info("Starting userbot client")
-    app2.start()
+# تم حذف app.start() و app2.start() من هنا - سيتم تشغيلهما في __main__.py
 
 log.info("Gathering profile info")
 x = app.get_me()
@@ -165,6 +161,12 @@ try:
     telegraph.create_account(short_name=BOT_USERNAME or "wbb")
 except Exception as e:
     log.error(f"Telegraph init failed (non-fatal): {e}")
+
+
+async def eor(msg: Message, **kwargs):
+    """Edit or reply to a message (used by userbot)."""
+    func = msg.edit_text if msg.from_user and msg.from_user.is_self else msg.reply_text
+    return await func(**kwargs)
 
 
 async def eor(msg: Message, **kwargs):
