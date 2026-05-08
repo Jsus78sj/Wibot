@@ -33,3 +33,4 @@ telegraph==2.2.0
 TgCrypto==1.2.5
 uvloop==0.22.1
 youtube-dl==2021.12.17
+Python-ARQ
