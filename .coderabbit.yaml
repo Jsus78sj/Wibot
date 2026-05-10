@@ -1,13 +1,51 @@
 # .coderabbit.yaml
+# الإصدار الحالي من إعدادات CodeRabbit
+version: 2
+
+# إعدادات المراجعة العامة
 reviews:
-  # طلب مراجعة عالية الجودة
-  request_review: true
-  # منع المراجعة التلقائية لملفات معينة
-  path_filters:
-    - "!**/docs/**"
-    - "!**/*.md"
-  # إعطاء تعليمات مخصصة باللغة الطبيعية
-  instructions: >
-    ركز على الثغرات الأمنية وأماكن تسرب الذاكرة.
-    اتبع دليل أسلوب Google للغة C++.
-    تجاهل اقتراحات التنسيق، فهي تدار بواسطة Prettier.
+  # ⬇️ إعدادات فحوصات ما قبل الدمج
+  pre_merge_checks:
+    # 1. فحص اكتمال وصف طلب السحب
+    description_check:
+      enabled: true
+      # الحد الأدنى لعدد الكلمات في وصف الـ PR
+      min_words: 10
+      # رسالة مخصصة تظهر عند فشل الفحص
+      failure_message: "يرجى كتابة وصف واضح لطلب السحب يشرح الهدف والتغييرات."
+
+    # 2. فحص توثيق الدوال (Docstrings)
+    docstring_check:
+      enabled: true
+      # يمكنك اختيار مستوى الصرامة: 'error' أو 'warning' أو 'info'
+      severity: warning
+      # أنواع الدوال التي يجب توثيقها: public_only, all, none
+      include: public_only
+      failure_message: "الدوال العامة الجديدة تحتاج إلى توثيق (Docstring)."
+
+    # 3. فحص ملكية الملفات (يمنع تعديل ملفات خارج نطاقك)
+    ownership_check:
+      enabled: true
+      # اسم الملف الذي يحدد ملكية المجلدات (مثل CODEOWNERS)
+      owners_file: "CODEOWNERS"
+      failure_message: "أنت تقوم بتعديل ملفات لا تملك صلاحية تغييرها."
+
+    # 4. فحص ربط طلب السحب بقضايا (Issues)
+    linked_issues_check:
+      enabled: true
+      # يسمح بدمج الـ PR حتى لو لم يتم ربطه بقضية (true) أم لا (false)
+      allow_unlinked: false
+      failure_message: "يجب ربط طلب السحب هذا بقضية (Issue) واحدة على الأقل."
+
+    # 5. فحص التغييرات خارج النطاق
+    out_of_scope_check:
+      enabled: true
+      # قائمة بالمسارات التي تعتبر خارج نطاق التعديلات المسموحة
+      out_of_scope_paths:
+        - "docs/**"          # أي تغيير داخل مجلد docs ممنوع
+        - "config/secrets/**"
+      failure_message: "يحتوي طلب السحب على تغييرات في مسارات غير مسموح بها."
+
+  # إعدادات عامة (اختياري)
+  # ماذا يحدث عند فشل أي فحص: 'block' (منع الدمج) أو 'warn' (تحذير فقط)
+  request_changes_workflow: true # عند تفعيله، الفحوصات المهمة تمنع الدمج تلقائياً
